@@ -12,6 +12,7 @@ import java.net.SocketTimeoutException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class PersonDAO {
@@ -29,13 +30,18 @@ public class PersonDAO {
         return  jdbcTemplate.query("SELECT * FROM Person", new BeanPropertyRowMapper<>(Person.class));//можно не писать собственный RawMapper
     }
 
+    public Optional<Person> show(String email){
+        return jdbcTemplate.query("Select * from Person where email=?", new Object[] {email},
+                new BeanPropertyRowMapper<>(Person.class)).stream().findAny();
+    }
+
     public Person show(int id){
        return jdbcTemplate.query("SELECT * FROM Person where id=?",new Object[]{id},new PersonMapper())
                .stream().findAny().orElse(null);
     }
 
     public void save(Person person){
-        jdbcTemplate.update("insert into person values(1,?,?,?)",person.getName(),person.getAge()
+        jdbcTemplate.update("insert into person(name,age,email) values(?,?,?)",person.getName(),person.getAge()
         ,person.getEmail());
     }
 
@@ -62,7 +68,7 @@ public class PersonDAO {
         long before = System.currentTimeMillis();
 
         for (Person person : people) {
-            jdbcTemplate.update("insert into person values(?,?,?,?)",person.getId(), person.getName(),person.getAge()
+            jdbcTemplate.update("insert into person values(?,?,?)",person.getName(),person.getAge()
                     ,person.getEmail());
         }
 
